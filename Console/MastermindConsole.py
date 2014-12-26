@@ -1,3 +1,4 @@
+
 from Console import Initialisations
 from Console.TourDeJeu import *
 
@@ -7,7 +8,7 @@ def mastermindConsole():
     aDeviner = Initialisations.listeAleatoire(nbreCouleur, mbrePions)
 
     while True:  # boucle du programme
-        while tourDeJeu(nbreCouleur, mbrePions, aDeviner):  # boucle d'une partie
+        while not tourDeJeu(nbreCouleur, mbrePions, aDeviner):  # boucle d'une partie
             nbreEssais -= 1
             if nbreEssais <= 0:
                 print("Perdu! vous avez utilise tout vos essais")

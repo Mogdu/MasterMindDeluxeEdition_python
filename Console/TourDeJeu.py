@@ -16,7 +16,7 @@ def tourDeJeu(nbreCouleur, mbrePions, aDeviner):
     if rougesEtNoirs[0] == mbrePions:
         print("Gagne!")
         return True
-    return True
+    return False
 
 
 class UserError(Exception):
@@ -45,21 +45,21 @@ def affichage_proposition(proposition):
 def verification(proposition, aDeviner):  # retourne un nombre de pion bon dans l'ordre et dans le desordre
         rouge = 0  # dans l'ordre
         noir = 0  # dans le desordre
-        prop = list(proposition)  # on cree des listes independentes car on va suprimer des elements
-        reponse = list(aDeviner)
+        prop = dict(enumerate(proposition))  # on cree des listes independentes car on va suprimer des elements
+        reponse = dict(enumerate(aDeviner))
         # test dans l'ordre
-        for i, pion in enumerate(prop):
-            if pion == reponse[i]:
+        for i in range(len(prop)):
+            if prop[i] == reponse[i]:
                 rouge += 1
                 prop.pop(i)
                 reponse.pop(i)
         # test dans le desordre
-        for i, pion in enumerate(prop):
-            for pionReponse in reponse:
-                if pion == pionReponse:
+        for i in prop.keys():
+            for ii in reponse.keys():
+                if prop[i] == reponse[ii]:
                     noir += 1
-                    prop.pop(i)
-                    reponse.pop(i)
+                    reponse.pop(ii)
+                    break
         return rouge, noir
 
 def affichage_rougesEtNoirs(rougesEtNoirs):
