@@ -1,6 +1,6 @@
 
-from Console import Initialisations
-from Console.TourDeJeu import *
+import Initialisations
+from TourDeJeu import *
 
 
 def mastermindConsole():
