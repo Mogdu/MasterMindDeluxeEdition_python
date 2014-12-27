@@ -1,16 +1,16 @@
 
 
 
-def tourDeJeu(nbreCouleur, mbrePions, aDeviner):
+def tourDeJeu(nbreCouleur, n, aDeviner):
     proposition = None
     while proposition == None:
         try:
-            proposition = saisie(nbreCouleur, mbrePions)
+            proposition = saisie(nbreCouleur, n)
         except UserError:
             pass
     rougesEtBlancs = verification(proposition, aDeviner)
     affichage_rougesEtBlancs(rougesEtBlancs)
-    if rougesEtBlancs[0] == mbrePions:
+    if rougesEtBlancs[0] == n:
         print("Gagné! felicitations")
         return True
     return False
@@ -19,10 +19,10 @@ def tourDeJeu(nbreCouleur, mbrePions, aDeviner):
 class UserError(Exception):
     pass
 
-def saisie(nbreCouleur, mbrePions):
+def saisie(nbreCouleur, nbrePions):
     characters = input("saisir votre proposition : ")
     proposition = []
-    possible = range(1, 7)
+    possible = range(1, nbreCouleur+1)
     for c in characters:
         i = int(c)
         try:
@@ -32,7 +32,8 @@ def saisie(nbreCouleur, mbrePions):
             continue
     if len(proposition) < 4:
         raise UserError("Seulement", len(possible), "valeurs sont correctes")
-    return proposition[:mbrePions]
+    return proposition[:nbrePions]
+
 
 
 def affichage_proposition(proposition):
