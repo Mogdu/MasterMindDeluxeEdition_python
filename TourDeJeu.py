@@ -8,13 +8,10 @@ def tourDeJeu(nbreCouleur, mbrePions, aDeviner):
             proposition = saisie(nbreCouleur, mbrePions)
         except UserError:
             pass
-    affichage_proposition(proposition)
     rougesEtNoirs = verification(proposition, aDeviner)
     affichage_rougesEtNoirs(rougesEtNoirs)
-    ## debug
-    affichage_proposition(aDeviner)
     if rougesEtNoirs[0] == mbrePions:
-        print("Gagne!")
+        print("Gagné! felicitations")
         return True
     return False
 
@@ -23,7 +20,7 @@ class UserError(Exception):
     pass
 
 def saisie(nbreCouleur, mbrePions):
-    characters = input("Entrer une suite de "+str(mbrePions)+" chiffres tous entre 1 et "+str(nbreCouleur))
+    characters = input("saisir votre proposition : ")
     proposition = []
     possible = range(1, 7)
     for c in characters:
@@ -33,13 +30,14 @@ def saisie(nbreCouleur, mbrePions):
                 proposition.append(i)
         except ValueError:  # c n'etait pas un nombre
             continue
-    if len(possible) < 4:
+    if len(proposition) < 4:
         raise UserError("Seulement", len(possible), "valeurs sont correctes")
-    return proposition
+    return proposition[:mbrePions]
 
 
 def affichage_proposition(proposition):
-    print(proposition)
+    for c in proposition:
+        print(c, end="")
 
 
 def verification(proposition, aDeviner):  # retourne un nombre de pion bon dans l'ordre et dans le desordre
@@ -63,4 +61,4 @@ def verification(proposition, aDeviner):  # retourne un nombre de pion bon dans 
         return rouge, noir
 
 def affichage_rougesEtNoirs(rougesEtNoirs):
-    print(rougesEtNoirs[0], "bons dans l'ordre", rougesEtNoirs[1], "bons dans le desordre")
+    print(rougesEtNoirs[0], "bien placé(s), et ", rougesEtNoirs[1], "mal placé(s)")
