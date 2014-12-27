@@ -8,9 +8,9 @@ def tourDeJeu(nbreCouleur, mbrePions, aDeviner):
             proposition = saisie(nbreCouleur, mbrePions)
         except UserError:
             pass
-    rougesEtNoirs = verification(proposition, aDeviner)
-    affichage_rougesEtNoirs(rougesEtNoirs)
-    if rougesEtNoirs[0] == mbrePions:
+    rougesEtBlancs = verification(proposition, aDeviner)
+    affichage_rougesEtBlancs(rougesEtBlancs)
+    if rougesEtBlancs[0] == mbrePions:
         print("Gagné! felicitations")
         return True
     return False
@@ -42,8 +42,8 @@ def affichage_proposition(proposition):
 
 def verification(proposition, aDeviner):  # retourne un nombre de pion bon dans l'ordre et dans le desordre
         rouge = 0  # dans l'ordre
-        noir = 0  # dans le desordre
-        prop = dict(enumerate(proposition))  # on cree des listes independentes car on va suprimer des elements
+        blanc = 0  # dans le desordre
+        prop = dict(enumerate(proposition))  # on cree des dictionaires pour eliminer des element pendant les iterations
         reponse = dict(enumerate(aDeviner))
         # test dans l'ordre
         for i in range(len(prop)):
@@ -55,10 +55,10 @@ def verification(proposition, aDeviner):  # retourne un nombre de pion bon dans 
         for i in prop.keys():
             for ii in reponse.keys():
                 if prop[i] == reponse[ii]:
-                    noir += 1
+                    blanc += 1
                     reponse.pop(ii)
                     break
-        return rouge, noir
+        return rouge, blanc
 
-def affichage_rougesEtNoirs(rougesEtNoirs):
-    print(rougesEtNoirs[0], "bien placé(s), et ", rougesEtNoirs[1], "mal placé(s)")
+def affichage_rougesEtBlancs(rougesEtBlancs):
+    print(rougesEtBlancs[0], "bien placé(s), et ", rougesEtBlancs[1], "mal placé(s)")
