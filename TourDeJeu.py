@@ -22,16 +22,15 @@ class UserError(Exception):
 def saisie(nbreCouleur, nbrePions):
     characters = input("saisir votre proposition : ")
     proposition = []
-    possible = range(1, nbreCouleur+1)
     for c in characters:
-        i = int(c)
         try:
-            if i in possible:
+            i = int(c)
+            if i < 1 or i > nbreCouleur:
                 proposition.append(i)
         except ValueError:  # c n'etait pas un nombre
             continue
-    if len(proposition) < 4:
-        raise UserError("Seulement", len(possible), "valeurs sont correctes")
+    if len(proposition) < nbrePions:
+        raise UserError("Seulement", len(proposition), "valeurs sont correctes")
     return proposition[:nbrePions]
 
 

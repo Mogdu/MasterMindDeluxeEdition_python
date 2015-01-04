@@ -4,7 +4,8 @@ from TourDeJeu import *
 
 
 def tourDeJeuIA(S, essai, aDeviner, nbrePions):
-    proposition = choisirIA(S, essai)
+    proposition = choisirIA(S, essai, nbrePions)
+    print("proposition de l'ordinateur : ", end="")
     affichage_proposition(proposition)
     print("")
     rougesEtBlancs = verification(proposition, aDeviner)
@@ -16,8 +17,8 @@ def tourDeJeuIA(S, essai, aDeviner, nbrePions):
     return S
 
 
-def choisirIA(S, essai):
-    if essai == 1:
+def choisirIA(S, essai, nbrePions):
+    if essai == 1 and nbrePions == 4:
         return [1, 1, 2, 2]
 
     # ""Sinon, elle calcule le maximum sur l’ensemble des éléments 'x’ de “possibles“,
