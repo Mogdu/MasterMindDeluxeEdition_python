@@ -2,10 +2,27 @@
 import pygame
 from pygame.locals import*
 
+
+class Collidable:
+    hitBox = []
+    clickedFunction = None
+
+    def __init__(self, hitBox, clickedFunction = None):
+        self.hitBox = hitBox
+        self.clickedFunction = clickedFunction
+
+    def colideTest(self, coords):
+        if coords[0] >= self.hitBox[0] and coords[0] <= self.hitBox[2] and \
+           coords[1] >= self.hitBox[1] and coords[1] <= self.hitBox[3]:
+            return True
+        return False
+
+
 class MainWindow:
 
     size = []
     screen = None
+    colidables = []
 
     def __init__(self):
         # Define some colors
@@ -24,16 +41,24 @@ class MainWindow:
         self.printScreen()
         done = False
         while not done:
-            for event in pygame.event.get():  # User did something
-                if event.type == pygame.QUIT:  # If user clicked close
+            for e in pygame.event.get():  # User did something
+                if e.type == pygame.QUIT:  # If user clicked close
                     done = True  # Flag that we are done so we exit this loop
-                elif event.type == VIDEORESIZE:
-                    self.size = [event.w, event.h]
+                elif e.type == VIDEORESIZE:
+                    self.size = [e.w, e.h]
                     self.printScreen()
                     pygame.display.update()
+                elif e.type == MOUSEBUTTONUP:
+                    self.clickColide(e.pos)
 
 
         pygame.quit()
+
+
+    def clickColide(self, coords):
+        for colidable in self.colidables:
+            if colidable.colideTest(coords):
+                colidable.clickedFunction()
 
 
     def printScreen(self):
