@@ -2,20 +2,14 @@
 import pygame
 from pygame.locals import*
 
+def collisionTest(coord, hitbox):
+    return hitbox[0] <= coord[0] <= hitbox[2] and hitbox[1] <= coord[1] <= hitbox[3]
 
-class Collidable:
-    hitBox = []
-    clickedFunction = None
+pionImages = []
 
-    def __init__(self, hitBox, clickedFunction = None):
-        self.hitBox = hitBox
-        self.clickedFunction = clickedFunction
-
-    def colideTest(self, coords):
-        if coords[0] >= self.hitBox[0] and coords[0] <= self.hitBox[2] and \
-           coords[1] >= self.hitBox[1] and coords[1] <= self.hitBox[3]:
-            return True
-        return False
+def dessinePion(nb, coord, taillePions, screen):
+    pygame.draw.rect(screen, (255, 255, 255),
+                     [x, y, taillePions, taillePions], 2)
 
 
 class MainWindow:
@@ -66,19 +60,18 @@ class MainWindow:
 
         bordure = 100
         taillePions = 46
-        pygame.draw.rect(self.screen, (255, 255, 255),
-                         [(self.size[0]-4*taillePions)//2 - 2, 20, 4*taillePions + 5, taillePions + 5], 2)
+        #pygame.draw.rect(self.screen, (255, 255, 255),
+        #                 [(self.size[0]-4*taillePions)//2 - 2, 20, 4*taillePions + 5, taillePions + 5], 2)
 
+        y = 100
         for i in range(10):
-            pygame.draw.rect(self.screen, (255, 255, 255),
-                             [(self.size[0]-4*taillePions)//2, 100 + i*taillePions, 4*taillePions, taillePions], 2)
+            y += taillePions
+            x = 100
+            for ii in range(4):
+                pygame.draw.rect(self.screen, (255, 255, 255),
+                               [x, y, taillePions, taillePions], 2)
 
-        pygame.draw.rect(self.screen, (255, 255, 255),
-                         [(self.size[0]-4*taillePions)//2, 650, 4*taillePions, taillePions], 2)
-
-        for i in range(4):
-            pygame.draw.rect(self.screen, (255, 255, 255),
-                             [(self.size[0]-4*taillePions)//2 + taillePions*i, 560, taillePions, taillePions], 2)
+                x += taillePions
 
 
 
