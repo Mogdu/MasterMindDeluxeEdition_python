@@ -2,14 +2,21 @@
 import pygame
 from pygame.locals import*
 
+pygame.init()
+
+
 def collisionTest(coord, hitbox):
     return hitbox[0] <= coord[0] <= hitbox[2] and hitbox[1] <= coord[1] <= hitbox[3]
 
-pionImages = []
+spriteListe = []
+def dessinePion(nb, coord):
+     sprite = pygame.sprite()
+     sprite.image = pygame.image.load("pion"+str(nb)+".jpg").convert()
+     sprite.rect = sprite.image.get_rect()
+     sprite.rect.topleft = coord
+     spriteListe.append(sprite)
 
-def dessinePion(nb, coord, taillePions, screen):
-    pygame.draw.rect(screen, (255, 255, 255),
-                     [x, y, taillePions, taillePions], 2)
+
 
 
 class MainWindow:
