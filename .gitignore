@@ -51,3 +51,10 @@ Temporary Items
 .idea/MasterMindDeluxeEdition_python - Copie.iml
 *.iml
 *.xml
+.idea/workspace.xml
+.idea/misc.xml
+.idea/workspace.xml
+.idea/MasterMindDeluxeEdition_python - Copie.iml
+__pycache__/Initialisations.cpython-34.pyc
+__pycache__/TourDeJeu.cpython-34.pyc
+*.pyc

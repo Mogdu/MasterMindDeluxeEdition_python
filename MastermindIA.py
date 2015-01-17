@@ -30,10 +30,10 @@ def choisirIA(S, essai, nbrePions):
 
 
 
-def reduireLesPossibles(S, choix, resultat):
-    S = _reduireLesPossibles_casGeneral_ordre(S, choix, resultat[0])
-    S = _reduireLesPossibles_casGeneral_desordre(S, choix, resultat[1])
-    return S
+#def reduireLesPossibles(S, choix, resultat):
+#    S = _reduireLesPossibles_casGeneral_ordre(S, choix, resultat[0])
+#    S = _reduireLesPossibles_casGeneral_desordre(S, choix, resultat[1])
+#    return S
 
 def _reduireLesPossibles_casGeneral_ordre(S, choix, bons):
     # on peut enlever tout les resultats qui contiennent moins ou plus de pions dans l'ordre
@@ -48,27 +48,30 @@ def _reduireLesPossibles_casGeneral_ordre(S, choix, bons):
     return newS
 
 
-def _reduireLesPossibles_casGeneral_desordre(S, choix, bons):
-    # on peut enlever tout les resultats qui contiennent au moins le non nombre de ces pions dans de desordre
+def reduireLesPossibles(S, choix, resultats):
+    # on peut enlever tout les resultats qui contiennent moins de ces pions dans de desordre
     newS = set()
     for code in S:
-        nb = 0
+        ordre = 0
+        desordre = 0
         for i, element in enumerate(code):
             for ii, chElement in enumerate(choix):
-                if i != ii and element == chElement:
-                    nb += 1
-        if nb >= bons:
+                if element == chElement:
+                    if i == ii:
+                        ordre += 1
+                    else:
+                        desordre += 1
+
+        if ordre == resultats[0] and desordre >= resultats[1]:
             newS.update((code,))
     print("plus que", len(newS), "possibles")
     return newS
 
 
 
-def ensembleDesPossibles(mbrePions, nbreCouleur):
+def ensembleDesPossibles(nbrePions, nbreCouleur):
     ensemble = set()
-    for i in range(1, nbreCouleur+1):
-        sousEnsemble = (i,)   # la virgule dans (i,) en fait un tuple
-        ensemble.update(_ensembleDesPossibles_iteration(sousEnsemble, nbreCouleur, mbrePions-1))
+    ensemble = _ensembleDesPossibles_iteration((), nbreCouleur, nbrePions)
     return ensemble
 
 
@@ -76,7 +79,6 @@ def _ensembleDesPossibles_iteration(premiers, nbreCouleur, restants):
     sousEnsembles = set()
     for i in range(1, nbreCouleur+1):
         sousEnsemble = (premiers) + (i,)   # la virgule dans (i,) en fait un tuple et autorise a l'additioner
-        #print(sousEnsemble)
         if restants > 1:
             sousEnsembles.update(_ensembleDesPossibles_iteration(sousEnsemble, nbreCouleur, restants-1))
         else:
