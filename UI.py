@@ -59,13 +59,13 @@ def creerMenu():
     screen.fill((192, 192, 192))
 
     declancheurs.append(( [100, 100, 400, 150], lambda: pygame.event.post(pygame.event.Event(NOUVELLEPARTIEEVENT)) ))
-    screen.blit(pygame.image.load("nouvellePartie.png"), [100, 100])
+    screen.blit(pygame.image.load("images/nouvellePartie.png"), [100, 100])
 
     declancheurs.append(( [100, 200, 400, 250], lambda: pygame.event.post(pygame.event.Event(CONTINUEPARTIEEVENT)) ))
-    screen.blit(pygame.image.load("continuer.png"), [100, 200])
+    screen.blit(pygame.image.load("images/continuer.png"), [100, 200])
 
     declancheurs.append(( [100, 300, 400, 350], lambda: pygame.event.post(pygame.event.Event(QUIT)) ))
-    screen.blit(pygame.image.load("quiter.png"), [100, 300])
+    screen.blit(pygame.image.load("images/quiter.png"), [100, 300])
     pygame.display.flip()
 
 
@@ -82,17 +82,17 @@ def partie():
         p = i+1
         # un petit peut laid, mais permet de passer la valeur de p a cet instant
         declancheurs.append(( [x, y, x+taillePions, y+taillePions], eval("lambda: proposition.append("+str(p)+")") ))
-        images.append(("pion"+str(p)+".png", [x, y]))
+        images.append(("images/pion"+str(p)+".png", [x, y]))
 
     # les autres boutons:
     declancheurs.append(( [350, 100, 450, 150], valideProposition ))
-    images.append(("valider.jpg", [350, 100]))
+    images.append(("images/valider.jpg", [350, 100]))
 
     declancheurs.append(( [360, 145, 450, 180], corrigeProposition ))
-    images.append(("corriger.png", [360, 145]))
+    images.append(("images/corriger.png", [360, 145]))
 
     declancheurs.append(( [400, 0, 500, 48], sauvegarder ))
-    images.append(("sauvegarderQuiter.png", [400, 0]))
+    images.append(("images/sauvegarderQuiter.png", [400, 0]))
 
     affichePartie()
 
@@ -126,12 +126,12 @@ def boucleGenerale(partieEnCours = False):
                 boucle = False
             elif e.type == WINEVENT:
                 secret = False
-                images.append(("felicitations.png", [120, 50]))
+                images.append(("images/felicitations.png", [120, 50]))
                 affichePartie()
                 declancheurs = [[ [0, 0, 500, 700], lambda: pygame.event.post(pygame.event.Event(TOMENUEVENT)) ]]
             elif e.type == LOSEEVENT:
                 secret = False
-                images.append(("perdu.png", [120, 50]))
+                images.append(("images/perdu.png", [120, 50]))
                 affichePartie()
                 declancheurs = [[ [0, 0, 500, 700], lambda: pygame.event.post(pygame.event.Event(TOMENUEVENT)) ]]
             elif e.type == TOMENUEVENT:
@@ -153,7 +153,7 @@ def boucleGenerale(partieEnCours = False):
 
 
 def affichePartie():
-    screen.fill((192, 192, 192))
+    screen.fill((194, 194, 194))
 
     for im in images:
         screen.blit(pygame.image.load(im[0]), im[1])
@@ -191,12 +191,11 @@ def declancheurColision(coords):
 
     for declancheur in declancheurs:
         if collisionTest(coords, declancheur[0]):
-            print("collision")
             declancheur[1]()  # on execute la fonction assosciee
 
 
 def dessinePion(nb, coord, screen):
-     image = pygame.image.load("pion"+str(nb)+".png")
+     image = pygame.image.load("images/pion"+str(nb)+".png")
      screen.blit(image, coord)
 
 def dessineProposition(proposition, coord, screen):
@@ -207,11 +206,11 @@ def dessineProposition(proposition, coord, screen):
 def dessineResultat(resultat, coord, screen):
     resImages = []
     for i in range(resultat[0]):
-        resImages.append(pygame.image.load("rouge.png"))
+        resImages.append(pygame.image.load("images/rouge.png"))
     for i in range(resultat[1]):
-        resImages.append(pygame.image.load("blanc.png"))
+        resImages.append(pygame.image.load("images/blanc.png"))
     while len(resImages) < 4:
-        resImages.append(pygame.image.load("noir.png"))
+        resImages.append(pygame.image.load("images/noir.png"))
 
     for i, resImage in enumerate(resImages):
         screen.blit(resImage, [coord[0]+(i%2)*(taillePions//2), coord[1]+(i//2)*(taillePions//2)])
@@ -223,17 +222,12 @@ def valideProposition():
     if len(proposition) < 4:
         return  # on empeche l'utilisateur de valider une proposition trop courte
 
-    print("proposition:", proposition)
-    print("a deviner:", aDeviner)
-    print("verif:", TourDeJeu.verification(proposition[:4], aDeviner))
     result = TourDeJeu.verification(proposition[:4], aDeviner)
     oldPropositions.append([proposition[:4], result])
     proposition = []
     if result[0] == 4:  # 4 bons dans l'ordre
-        print("Win")
         pygame.event.post(pygame.event.Event(WINEVENT))
     elif len(oldPropositions) >= 10:
-        print("lose")
         pygame.event.post(pygame.event.Event(LOSEEVENT))
 
 
