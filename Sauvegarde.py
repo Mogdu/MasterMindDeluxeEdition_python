@@ -4,8 +4,8 @@ import TourDeJeu
 
 
 def sauvegarder(aDeviner, oldPropositions):
-    # on encode la partie dans un int
-    # ce qui 1 prend moins de place. 2 cache la solution a l'utilisateur
+    # on encode la partie dans un nombre entier
+    # ce qui 1) prend moins de place. 2) cache la solution a l'utilisateur
     data = 0
     i = 0
     print("aDeviner:", aDeviner)
@@ -31,7 +31,7 @@ def reprendre():
     oldPropositions = []
 
     listeDesValeurs = []
-    for c in oct(data)[2:]:  # on decoupe data serie de chifres de base 8
+    for c in oct(data)[2:]:  # on decoupe data en serie de chifres de base 8
         listeDesValeurs.append(c)
 
     for i in range(4):

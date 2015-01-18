@@ -22,11 +22,165 @@ images = []
 # constantes globales:
 bordures = [60, 100]
 taillePions = 45
+# custom events prevu par pygames:
 WINEVENT = USEREVENT+1
 LOSEEVENT = USEREVENT+2
 TOMENUEVENT = USEREVENT+3
 NOUVELLEPARTIEEVENT = USEREVENT+4
 CONTINUEPARTIEEVENT = USEREVENT+5
+
+
+
+
+
+
+
+
+# fonction d'entree
+def main():
+    pygame.init()
+
+    size = (500, 700)
+    global screen
+    screen = pygame.display.set_mode(size)
+    pygame.display.set_caption("Mastermind")
+
+    creerMenu()
+    boucleGenerale()
+
+    pygame.quit()
+
+
+
+def creerMenu():
+    global declancheurs
+    declancheurs = []  # un declancheur est un couple hitbox / fonction
+
+    screen.fill((192, 192, 192))
+
+    declancheurs.append(( [100, 100, 400, 150], lambda: pygame.event.post(pygame.event.Event(NOUVELLEPARTIEEVENT)) ))
+    screen.blit(pygame.image.load("nouvellePartie.png"), [100, 100])
+
+    declancheurs.append(( [100, 200, 400, 250], lambda: pygame.event.post(pygame.event.Event(CONTINUEPARTIEEVENT)) ))
+    screen.blit(pygame.image.load("continuer.png"), [100, 200])
+
+    declancheurs.append(( [100, 300, 400, 350], lambda: pygame.event.post(pygame.event.Event(QUIT)) ))
+    screen.blit(pygame.image.load("quiter.png"), [100, 300])
+    pygame.display.flip()
+
+
+def partie():
+    global images, declancheurs, proposition, secret
+    secret = True
+    images = []  # les couples url, coordones de toutes les images
+    declancheurs = []  # un declancheur est un couple hitbox / fonction
+
+    # on place les boutons pour choisire les pions
+    for i in range(6):
+        x = bordures[0]+i*taillePions
+        y = bordures[1]
+        p = i+1
+        # un petit peut laid, mais permet de passer la valeur de p a cet instant
+        declancheurs.append(( [x, y, x+taillePions, y+taillePions], eval("lambda: proposition.append("+str(p)+")") ))
+        images.append(("pion"+str(p)+".png", [x, y]))
+
+    # les autres boutons:
+    declancheurs.append(( [350, 100, 450, 150], valideProposition ))
+    images.append(("valider.jpg", [350, 100]))
+
+    declancheurs.append(( [360, 145, 450, 180], corrigeProposition ))
+    images.append(("corriger.png", [360, 145]))
+
+    declancheurs.append(( [400, 0, 500, 48], sauvegarder ))
+    images.append(("sauvegarderQuiter.png", [400, 0]))
+
+    affichePartie()
+
+
+def sauvegarder():
+    Sauvegarde.sauvegarder(aDeviner, oldPropositions)
+    pygame.event.post(pygame.event.Event(TOMENUEVENT))
+
+
+def partieSauvegardee():
+    global aDeviner, oldPropositions
+    aDeviner, oldPropositions = Sauvegarde.reprendre()
+    print(aDeviner)
+    print(oldPropositions)
+    partie()
+
+def nouvellePartie():
+    global aDeviner, oldPropositions
+    aDeviner = Initialisations.listeAleatoire(6, 4)
+    oldPropositions =[]
+    partie()
+
+
+# tout les events sont recuper ici. cette fonction boucle jusqu'a l'arret du programme
+def boucleGenerale(partieEnCours = False):
+    global secret, declancheurs, images
+    boucle = True
+    while boucle:
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                boucle = False
+            elif e.type == WINEVENT:
+                secret = False
+                images.append(("felicitations.png", [120, 50]))
+                affichePartie()
+                declancheurs = [[ [0, 0, 500, 700], lambda: pygame.event.post(pygame.event.Event(TOMENUEVENT)) ]]
+            elif e.type == LOSEEVENT:
+                secret = False
+                images.append(("perdu.png", [120, 50]))
+                affichePartie()
+                declancheurs = [[ [0, 0, 500, 700], lambda: pygame.event.post(pygame.event.Event(TOMENUEVENT)) ]]
+            elif e.type == TOMENUEVENT:
+                secret = False
+                partieEnCours = False
+                creerMenu()
+            elif e.type == NOUVELLEPARTIEEVENT:
+                secret = True
+                partieEnCours = True
+                nouvellePartie()
+            elif e.type == CONTINUEPARTIEEVENT:
+                secret = True
+                partieEnCours = True
+                partieSauvegardee()
+            elif e.type == MOUSEBUTTONUP:
+                declancheurColision(e.pos)
+                if partieEnCours:
+                    affichePartie()
+
+
+def affichePartie():
+    screen.fill((192, 192, 192))
+
+    for im in images:
+        screen.blit(pygame.image.load(im[0]), im[1])
+
+    # on dessine la solution a decouvrire
+    if secret == True:
+        dessineProposition((0,0,0,0), [bordures[0]+67, 0], screen)
+    else:
+        dessineProposition(aDeviner, [bordures[0]+67, 0], screen)
+
+    # on dessine les enciennes propositions du joueur
+    x = bordures[0]+taillePions
+    y = bordures[1]+taillePions
+    for oldPropo in oldPropositions:
+        y += taillePions
+        dessineProposition(oldPropo[0], [x, y], screen)
+        dessineResultat(oldPropo[1], [x+200, y], screen)
+
+    # on dessine la proposition actuel (pas forcement complete)
+    y += taillePions
+    for i, pion in enumerate(proposition[:4]):
+        dessinePion(pion, [x+i*taillePions, y], screen)
+
+
+    pygame.display.flip()
+
+
 
 
 def collisionTest(coord, hitbox):
@@ -88,145 +242,8 @@ def corrigeProposition():
         proposition.pop()
 
 
-def main():
-
-    pygame.init()
-
-    size = (500, 700)
-    global screen
-    screen = pygame.display.set_mode(size, RESIZABLE)
-    pygame.display.set_caption("Mastermind")
-
-    creerMenu()
-    boucleGenerale()
-
-    pygame.quit()
 
 
-
-def creerMenu():
-    global declancheurs
-    declancheurs = []  # un declancheur est un couple hitbox / fonction
-
-    screen.fill((192, 192, 192))
-
-    declancheurs.append(( [100, 100, 400, 150], lambda: pygame.event.post(pygame.event.Event(NOUVELLEPARTIEEVENT)) ))
-    screen.blit(pygame.image.load("nouvellePartie.png"), [100, 100])
-
-    declancheurs.append(( [100, 200, 400, 250], lambda: pygame.event.post(pygame.event.Event(CONTINUEPARTIEEVENT)) ))
-    screen.blit(pygame.image.load("continuer.png"), [100, 200])
-
-    declancheurs.append(( [100, 300, 400, 350], lambda: pygame.event.post(pygame.event.Event(QUIT)) ))
-    screen.blit(pygame.image.load("quiter.png"), [100, 300])
-    pygame.display.flip()
-
-
-def partie():
-    global images, declancheurs, proposition, secret
-    secret = True
-    images = []  # les couples url, coordones de toutes les images
-    declancheurs = []  # un declancheur est un couple hitbox / fonction
-
-    # on place les boutons pour choisire les pions
-    for i in range(6):
-        x = bordures[0]+i*taillePions
-        y = bordures[1]
-        p = i+1
-        # un petit peut laid, mais permet de passer la valeur de p a cet instant
-        declancheurs.append(( [x, y, x+taillePions, y+taillePions], eval("lambda: proposition.append("+str(p)+")") ))
-        images.append(("pion"+str(p)+".png", [x, y]))
-
-    # les autres boutons:
-    declancheurs.append(( [350, 100, 450, 150], valideProposition ))
-    images.append(("valider.jpg", [350, 100]))
-
-    declancheurs.append(( [355, 147, 450, 200], corrigeProposition ))
-    images.append(("corriger_smaller.jpg", [355, 147]))
-
-    declancheurs.append(( [400, 0, 500, 48], sauvegarder ))
-    images.append(("sauvegarderQuiter.png", [400, 0]))
-
-    printScreen()
-
-
-def sauvegarder():
-    Sauvegarde.sauvegarder(aDeviner, oldPropositions)
-
-
-def partieSauvegardee():
-    global aDeviner, oldPropositions
-    aDeviner, oldPropositions = Sauvegarde.reprendre()
-    print(aDeviner)
-    print(oldPropositions)
-    partie()
-
-def nouvellePartie():
-    global aDeviner, oldPropositions
-    aDeviner = Initialisations.listeAleatoire(6, 4)
-    oldPropositions =[]
-    partie()
-
-
-def boucleGenerale(partieEnCours = False):
-    global secret, declancheurs
-    boucle = True
-    while boucle:  # tourne en boucle jusqu'a la victoire, defaite, ou que l'utilisateur quite
-        for e in pygame.event.get():
-            if e.type == pygame.QUIT:
-                boucle = False
-            elif e.type == WINEVENT:
-                secret = False
-                printScreen()
-                declancheurs = [[ [0, 0, 500, 700], lambda: pygame.event.post(pygame.event.Event(TOMENUEVENT)) ]]
-            elif e.type == LOSEEVENT:
-                secret = False
-                printScreen()
-                declancheurs = [[ [0, 0, 500, 700], lambda: pygame.event.post(pygame.event.Event(TOMENUEVENT)) ]]
-            elif e.type == TOMENUEVENT:
-                secret = False
-                partieEnCours = False
-                creerMenu()
-            elif e.type == NOUVELLEPARTIEEVENT:
-                secret = True
-                partieEnCours = True
-                nouvellePartie()
-            elif e.type == CONTINUEPARTIEEVENT:
-                secret = True
-                partieEnCours = True
-                partieSauvegardee()
-            elif e.type == MOUSEBUTTONUP:
-                declancheurColision(e.pos)
-                if partieEnCours:
-                    printScreen()
-
-
-def printScreen():
-    screen.fill((192, 192, 192))
-
-    for im in images:
-        screen.blit(pygame.image.load(im[0]), im[1])
-
-    # on dessine la solution a decouvrire
-    if secret == True:
-        dessineProposition((0,0,0,0), [bordures[0]+67, 0], screen)
-    else:
-        dessineProposition(aDeviner, [bordures[0]+67, 0], screen)
-
-    # on dessine les enciennes propositions du joueur
-    x = bordures[0]+taillePions
-    y = bordures[1]+taillePions
-    for oldPropo in oldPropositions:
-        y += taillePions
-        dessineProposition(oldPropo[0], [x, y], screen)
-        dessineResultat(oldPropo[1], [x+200, y], screen)
-
-    # on dessine la proposition actuel (pas forcement complete)
-    y += taillePions
-    for i, pion in enumerate(proposition[:4]):
-        dessinePion(pion, [x+i*taillePions, y], screen)
-
-
-    pygame.display.flip()
 
 
 window = main()

@@ -21,35 +21,15 @@ def choisirIA(S, essai, nbrePions):
     if essai == 1 and nbrePions == 4:
         return [1, 1, 2, 2]
 
-    # ""Sinon, elle calcule le maximum sur l’ensemble des éléments 'x’ de “possibles“,
-    # du minimum sur l’ensemble des éléments ‘res’ de “résultats“
-    # du nombre d’éléments de S dont l’évaluation (au sens du jeu Mastermind) avec ‘s‘ est différente de ‘res’.""
-    # Nous prenons le partit d'interpreter librement ces ecritures
-
     return random.choice(list(S))
 
 
 
-#def reduireLesPossibles(S, choix, resultat):
-#    S = _reduireLesPossibles_casGeneral_ordre(S, choix, resultat[0])
-#    S = _reduireLesPossibles_casGeneral_desordre(S, choix, resultat[1])
-#    return S
-
-def _reduireLesPossibles_casGeneral_ordre(S, choix, bons):
-    # on peut enlever tout les resultats qui contiennent moins ou plus de pions dans l'ordre
-    newS = set()
-    for code in S:
-        nb = 0
-        for i, element in enumerate(code):
-            if element == choix[i]:
-                nb += 1
-        if nb == bons:
-            newS.update((code,))
-    return newS
-
-
 def reduireLesPossibles(S, choix, resultats):
-    # on peut enlever tout les resultats qui contiennent moins de ces pions dans de desordre
+    # on enleve de S toutes les solutions qui ne corespondent pas au couple essai/resultat que l'on vient de jouer
+    # on peut supprimer tout ce qui a trop ou pas asse de bons dans l'ordre
+    # et tout ce qui n'a pas asse de bons dans le desordre
+    # par rapport a ce que l'on vient de jouer
     newS = set()
     for code in S:
         ordre = 0
