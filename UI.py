@@ -1,95 +1,231 @@
 
 import pygame
 from pygame.locals import*
+import TourDeJeu
+import Initialisations
+import Sauvegarde
 
-pygame.init()
+
+
+
+# variables globales
+# ces variables sont appele par des fonctions declanche par l'utilisateur.
+# en faire des variables global simplifient l'appele de ces fonctions
+screen = None
+proposition = []  # liste de nombres entiers
+oldPropositions = []  # liste de couple enciennes proposition / resultat assoscie
+aDeviner = []  # la proposition a deviner
+secret = True
+declancheurs = []
+images = []
+
+# constantes globales:
+bordures = [60, 100]
+taillePions = 45
+WINEVENT = USEREVENT+1
+LOSEEVENT = USEREVENT+2
+TOMENUEVENT = USEREVENT+3
+NOUVELLEPARTIEEVENT = USEREVENT+4
+CONTINUEPARTIEEVENT = USEREVENT+5
 
 
 def collisionTest(coord, hitbox):
     return hitbox[0] <= coord[0] <= hitbox[2] and hitbox[1] <= coord[1] <= hitbox[3]
 
 
-def dessinePion(nb, coord, screen):
-     image = pygame.image.load("pion"+str(nb)+".jpg")
-     screen.blit(image, coord)
+def declancheurColision(coords):
 
+    for declancheur in declancheurs:
+        if collisionTest(coords, declancheur[0]):
+            print("collision")
+            declancheur[1]()  # on execute la fonction assosciee
+
+
+def dessinePion(nb, coord, screen):
+     image = pygame.image.load("pion"+str(nb)+".png")
+     screen.blit(image, coord)
 
 def dessineProposition(proposition, coord, screen):
     for i, pion in enumerate(proposition):
-        dessinePion(pion, [coord[0]+i*45, coord[1]], screen)
+        dessinePion(pion, [coord[0]+i*taillePions, coord[1]], screen)
 
-def jouePion(nb):
-    pass
+
+def dessineResultat(resultat, coord, screen):
+    resImages = []
+    for i in range(resultat[0]):
+        resImages.append(pygame.image.load("rouge.png"))
+    for i in range(resultat[1]):
+        resImages.append(pygame.image.load("blanc.png"))
+    while len(resImages) < 4:
+        resImages.append(pygame.image.load("noir.png"))
+
+    for i, resImage in enumerate(resImages):
+        screen.blit(resImage, [coord[0]+(i%2)*(taillePions//2), coord[1]+(i//2)*(taillePions//2)])
+
+
+
+def valideProposition():
+    global proposition  # pour faire l'assignement plus bas
+    if len(proposition) < 4:
+        return  # on empeche l'utilisateur de valider une proposition trop courte
+
+    print("proposition:", proposition)
+    print("a deviner:", aDeviner)
+    print("verif:", TourDeJeu.verification(proposition[:4], aDeviner))
+    result = TourDeJeu.verification(proposition[:4], aDeviner)
+    oldPropositions.append([proposition[:4], result])
+    proposition = []
+    if result[0] == 4:  # 4 bons dans l'ordre
+        print("Win")
+        pygame.event.post(pygame.event.Event(WINEVENT))
+    elif len(oldPropositions) >= 10:
+        print("lose")
+        pygame.event.post(pygame.event.Event(LOSEEVENT))
+
+
+def corrigeProposition():
+    if len(proposition) > 0:
+        proposition.pop()
+
 
 def main():
-    # Define some colors
-    BLACK    = (   0,   0,   0)
-    WHITE    = ( 255, 255, 255)
-    GREEN    = (   0, 255,   0)
-    RED      = ( 255,   0,   0)
 
     pygame.init()
 
     size = (500, 700)
+    global screen
     screen = pygame.display.set_mode(size, RESIZABLE)
-
     pygame.display.set_caption("Mastermind")
 
-    declancheurs = []  # un declancheur est un couple hitbox / fonction
-
-    # on dessine les pions sur lesquels on clique pour jouer
-    for i in range(6):
-        p = i+1
-        declancheurs.append(( [100, 50+i*45, 100+45, 50+p*45], lambda: jouePion(p) ))
-        dessinePion(1, [100, 50+i*45], screen)
-
-    printScreen(screen)
-    done = False
-    while not done:
-        for e in pygame.event.get():  # User did something
-            if e.type == pygame.QUIT:  # If user clicked close
-                done = True  # Flag that we are done so we exit this loop
-            elif e.type == VIDEORESIZE:
-                size = [e.w, e.h]
-                printScreen(screen)
-                pygame.display.update()
-            elif e.type == MOUSEBUTTONUP:
-                declancheurColision(e.pos, declancheurs)
-
+    creerMenu()
+    boucleGenerale()
 
     pygame.quit()
 
 
-def declancheurColision(coords, declancheurs):
-    for declancheur in declancheurs:
-        if collisionTest(coords, declancheur[0]):
-            declancheur[1]()
+
+def creerMenu():
+    global declancheurs
+    declancheurs = []  # un declancheur est un couple hitbox / fonction
+
+    screen.fill((192, 192, 192))
+
+    declancheurs.append(( [100, 100, 400, 150], lambda: pygame.event.post(pygame.event.Event(NOUVELLEPARTIEEVENT)) ))
+    screen.blit(pygame.image.load("nouvellePartie.png"), [100, 100])
+
+    declancheurs.append(( [100, 200, 400, 250], lambda: pygame.event.post(pygame.event.Event(CONTINUEPARTIEEVENT)) ))
+    screen.blit(pygame.image.load("continuer.png"), [100, 200])
+
+    declancheurs.append(( [100, 300, 400, 350], lambda: pygame.event.post(pygame.event.Event(QUIT)) ))
+    screen.blit(pygame.image.load("quiter.png"), [100, 300])
+    pygame.display.flip()
 
 
-def printScreen(screen):
-    screen.fill((0, 0, 0))
+def partie():
+    global images, declancheurs, proposition, secret
+    secret = True
+    images = []  # les couples url, coordones de toutes les images
+    declancheurs = []  # un declancheur est un couple hitbox / fonction
 
-    bordures = [100, 100]
-    taillePions = 46
-    #pygame.draw.rect(self.screen, (255, 255, 255),
-    #                 [(self.size[0]-4*taillePions)//2 - 2, 20, 4*taillePions + 5, taillePions + 5], 2)
+    # on place les boutons pour choisire les pions
+    for i in range(6):
+        x = bordures[0]+i*taillePions
+        y = bordures[1]
+        p = i+1
+        # un petit peut laid, mais permet de passer la valeur de p a cet instant
+        declancheurs.append(( [x, y, x+taillePions, y+taillePions], eval("lambda: proposition.append("+str(p)+")") ))
+        images.append(("pion"+str(p)+".png", [x, y]))
 
-    y = bordures[1]
-    for i in range(10):
+    # les autres boutons:
+    declancheurs.append(( [350, 100, 450, 150], valideProposition ))
+    images.append(("valider.jpg", [350, 100]))
+
+    declancheurs.append(( [355, 147, 450, 200], corrigeProposition ))
+    images.append(("corriger_smaller.jpg", [355, 147]))
+
+    declancheurs.append(( [400, 0, 500, 48], sauvegarder ))
+    images.append(("sauvegarderQuiter.png", [400, 0]))
+
+    printScreen()
+
+
+def sauvegarder():
+    Sauvegarde.sauvegarder(aDeviner, oldPropositions)
+
+
+def partieSauvegardee():
+    global aDeviner, oldPropositions
+    aDeviner, oldPropositions = Sauvegarde.reprendre()
+    print(aDeviner)
+    print(oldPropositions)
+    partie()
+
+def nouvellePartie():
+    global aDeviner, oldPropositions
+    aDeviner = Initialisations.listeAleatoire(6, 4)
+    oldPropositions =[]
+    partie()
+
+
+def boucleGenerale(partieEnCours = False):
+    global secret, declancheurs
+    boucle = True
+    while boucle:  # tourne en boucle jusqu'a la victoire, defaite, ou que l'utilisateur quite
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                boucle = False
+            elif e.type == WINEVENT:
+                secret = False
+                printScreen()
+                declancheurs = [[ [0, 0, 500, 700], lambda: pygame.event.post(pygame.event.Event(TOMENUEVENT)) ]]
+            elif e.type == LOSEEVENT:
+                secret = False
+                printScreen()
+                declancheurs = [[ [0, 0, 500, 700], lambda: pygame.event.post(pygame.event.Event(TOMENUEVENT)) ]]
+            elif e.type == TOMENUEVENT:
+                secret = False
+                partieEnCours = False
+                creerMenu()
+            elif e.type == NOUVELLEPARTIEEVENT:
+                secret = True
+                partieEnCours = True
+                nouvellePartie()
+            elif e.type == CONTINUEPARTIEEVENT:
+                secret = True
+                partieEnCours = True
+                partieSauvegardee()
+            elif e.type == MOUSEBUTTONUP:
+                declancheurColision(e.pos)
+                if partieEnCours:
+                    printScreen()
+
+
+def printScreen():
+    screen.fill((192, 192, 192))
+
+    for im in images:
+        screen.blit(pygame.image.load(im[0]), im[1])
+
+    # on dessine la solution a decouvrire
+    if secret == True:
+        dessineProposition((0,0,0,0), [bordures[0]+67, 0], screen)
+    else:
+        dessineProposition(aDeviner, [bordures[0]+67, 0], screen)
+
+    # on dessine les enciennes propositions du joueur
+    x = bordures[0]+taillePions
+    y = bordures[1]+taillePions
+    for oldPropo in oldPropositions:
         y += taillePions
-        x = bordures[0]
-        for ii in range(4):
-            pygame.draw.rect(screen, (255, 255, 255),
-                             [x, y, taillePions, taillePions], 2)
+        dessineProposition(oldPropo[0], [x, y], screen)
+        dessineResultat(oldPropo[1], [x+200, y], screen)
 
-            x += taillePions
+    # on dessine la proposition actuel (pas forcement complete)
+    y += taillePions
+    for i, pion in enumerate(proposition[:4]):
+        dessinePion(pion, [x+i*taillePions, y], screen)
 
 
-    dessineProposition((1,1,1,1), bordures, screen)
-
-    ## .get_rect()
-
-    # --- Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
 
 
